@@ -48,6 +48,17 @@ app.post('/submit', (req, res) => {
     res.status(200);
 })
 
+fs.watchFile('test.json', (curr, prev) => {
+    console.log('file Changed');
+    jsonReader('test.json', (err, data) => {
+        fs.writeFile("backup.json", JSON.stringify(data), (err) => {
+            if (err) {
+                console.log(err);
+            }
+        });
+    })
+  });
+
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
