@@ -1,0 +1,22 @@
+[
+    {
+        "name": "rohan",
+        "product": "pizza"
+    },
+    {
+        "name": "ben",
+        "product": "cheese"
+    },
+    {
+        "name": "owen",
+        "product": "milk"
+    },
+    {
+        "name": "edward",
+        "product": "apple"
+    },
+    {
+        "name": "mark",
+        "product": "banana"
+    }
+]
