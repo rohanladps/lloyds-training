@@ -1,35 +1,21 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import React from 'react';
-import { createContext } from "react";
-import { useContext, useState } from "react";
-
-interface AppContextInterface {
-    name: string;
-    email: string;
-    number: string;
-}
-
-const AppCtx = createContext<AppContextInterface | null>(null);
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import Context from '../Context';
 
 const Home = () => {
 
-    const [loginForm, setLoginForm] = useState(true);
-    const [sampleAppContext, setSampleAppContext] = useState({
-        name: "Using React Context in a Typescript App",
-        email: "thehappybug",
-        number: "http://www.example.com",
-    });
-
+    const navigate = useNavigate();
+    const formData = useContext(Context);
     const formik = useFormik({
-        initialValues: {
-            name: '',
-            email: '',
-            number: '',
-        },
+        initialValues: formData,
         onSubmit: function (values) {
-            setSampleAppContext({ name: values.name, email: values.email, number: values.number })
-            setLoginForm(false);
+            formData.name = values.name;
+            formData.email = values.email;
+            formData.number = values.number;
+            navigate('/registered');
 
         },
         validationSchema: Yup.object({
@@ -46,7 +32,6 @@ const Home = () => {
     })
 
     return <div >
-        {loginForm ?
             <form onSubmit={formik.handleSubmit}>
                 <h1 >Register</h1>
                 <div >
@@ -77,24 +62,8 @@ const Home = () => {
                     <button type='submit'>Submit</button>
                 </div>
             </form>
-            :
-            <AppCtx.Provider value={sampleAppContext}>
-                <Registered />
-            </AppCtx.Provider>
-        }
     </div>;
 
-
-    function Registered() {
-        const appContext = useContext(AppCtx);
-
-        return (
-            <div>
-                Name: {appContext!.name}, Email: {appContext!.email}, Number:{appContext!.number}
-                <button onClick={() => setLoginForm(true)}>Return to form</button>;
-            </div>
-        );
-    }
 }
 export default Home;
 
