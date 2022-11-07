@@ -24,40 +24,32 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname + '/index.html'));
-})
-
-app.get('/read', (req, res) => {
-    jsonReader('test.json', (err, data) => {
-        if (err) {
-            res.send('nonexistent');
-        }
-        else {
+app.post('/module4api', (req, res) => {
+    if (fs.existsSync('test.json')) {
+        jsonReader('test.json', (err, data) => {
             res.send(data);
-        }
-    })
-})
-
-app.post('/submit', (req, res) => {
-    fs.writeFile("test.json", JSON.stringify(req.body), (err) => {
-        if (err) {
-            console.log(err);
-        }
-    });
-    res.status(200);
+        })
+    }
+    else {
+        fs.writeFile('test.json', JSON.stringify(req.body), (err) => {
+            if (err) {
+                console.log(err);
+            }
+            res.send('Successfully written to file.')
+        });
+    }
 })
 
 fs.watchFile('test.json', (curr, prev) => {
     console.log('file Changed');
     jsonReader('test.json', (err, data) => {
-        fs.writeFile("backup.json", JSON.stringify(data), (err) => {
+        fs.writeFile("backup.json", data ? JSON.stringify(data) : '', (err) => {
             if (err) {
                 console.log(err);
             }
         });
     })
-  });
+});
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
