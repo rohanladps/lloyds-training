@@ -2,8 +2,11 @@ import React from 'react';
 import './App.css';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useNavigate } from "react-router-dom";
 
 function App() {
+
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -12,8 +15,7 @@ function App() {
       number: '',
     },
     onSubmit: function (values) {
-      alert(`You are registered! Name: ${values.name}. Email: ${values.email}.
-        Phone Number: ${values.number}`);
+      navigate('/registered');
     },
     validationSchema: Yup.object({
       name: Yup.string()
