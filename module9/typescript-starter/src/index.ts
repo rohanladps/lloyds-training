@@ -13,9 +13,18 @@ app.use(bodyParser.json());
 const fs = require('fs');
 var http = require('http');
 
-// ****************************
-// *** SOLUTION USING ASYNC ***
-// ****************************
+interface UserBalance {
+    id: string,
+    balance: string
+}
+interface UserName {
+    id: string,
+    name: string
+}
+
+// **********************************
+// *** SOLUTION USING ASYNC AWAIT ***
+// **********************************
 app.get('/getUserDetailsAsync/:id', (req: Request, res: Response) => {
     getBalances(req.params.id, res)
 });
@@ -25,7 +34,7 @@ const getBalances = async (id: string, res: Response) => {
     var balance: string;
     var name: string;
 
-    var request = http.request({
+    var request = await http.request({
         host: 'localhost',
         port: 3000,
         path: '/balances',
@@ -39,12 +48,12 @@ const getBalances = async (id: string, res: Response) => {
             data += chunk;
         });
         response.on('end', () => {
-            balance = JSON.parse(data).find((user: any) => user.id === id).balance;
+            balance = JSON.parse(data).find((user: UserBalance) => user.id === id).balance;
         })
     })
     request.end();
 
-    var request2 = http.request({
+    var request2 = await http.request({
         host: 'localhost',
         port: 3000,
         path: '/fetchAllUsers',
@@ -58,14 +67,90 @@ const getBalances = async (id: string, res: Response) => {
             data2 += chunk2;
         });
         response2.on('end', () => {
-            name = JSON.parse(data2).find((user: any) => user.id === id).name;
+            name = JSON.parse(data2).find((user: UserName) => user.id === id).name;
             res.end(id + ',' + name + ',' + balance);
         })
     })
     request2.end();
 }
+// **********************************
+// *** SOLUTION USING ASYNC AWAIT ***
+// **********************************
+
+
+
+
+
+
+
 // ****************************
-// *** SOLUTION USING ASYNC ***
+// *** SOLUTION USING PROMISE ***
+// ****************************
+
+function httpRequestBalance() {
+    return new Promise<string>(function (resolve, reject) {
+        var req = http.request({
+            host: 'localhost',
+            port: 3000,
+            path: '/balances',
+            method: 'GET',
+            headers: {
+            }
+        }, function (res: Readable) {
+            var body = '';
+            res.setEncoding('utf8');
+            res.on('data', (chunk) => {
+                body += chunk;
+            });
+            res.on('end', function () {
+                resolve(body);
+            });
+        });
+        req.on('error', function (err: Error) {
+            reject(err);
+        });
+        req.end();
+    });
+}
+
+function httpRequestUsers() {
+    return new Promise<string>(function (resolve, reject) {
+        var req = http.request({
+            host: 'localhost',
+            port: 3000,
+            path: '/fetchAllUsers',
+            method: 'GET',
+            headers: {
+            }
+        }, function (res: Readable) {
+            var body = '';
+            res.setEncoding('utf8');
+            res.on('data', (chunk) => {
+                body += chunk;
+            });
+            res.on('end', function () {
+                resolve(body);
+            });
+        });
+        req.on('error', function (err: Error) {
+            reject(err);
+        });
+        req.end();
+    });
+}
+
+
+app.get('/getUserDetailsPromise/:id', (req: Request, res: Response) => {
+    httpRequestBalance().then(function (body: string) {
+        var balance = JSON.parse(body).find((user: UserBalance) => user.id === req.params.id).balance;
+        httpRequestUsers().then(function (body2: string) {
+            var name = JSON.parse(body2).find((user: UserName) => user.id === req.params.id).name;
+            res.send(req.params.id + ',' + name + ',' + balance);
+        })
+    })
+});
+// ****************************
+// *** SOLUTION USING PROMISE ***
 // ****************************
 
 app.get('/fetchAllUsers', (req: Request, res: Response) => {

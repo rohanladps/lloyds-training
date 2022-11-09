@@ -51,115 +51,125 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 var fs = require('fs');
 var http = require('http');
-// Create a node app using express to build a getUserDetails API which takes in user id as param 
-// and reads data from fetchAllUsers API(contains list of all user id and name) 
-// and balances Api(fetches balance per user). 
-// The getUserDetails API should return the user id, name as well as balance in the response. 
-// Implement the solution using both Promise and Async-await
-// const fetchBalancePerUserAPI = async () => {
-//     return await fetch(`http://localhost:3000/fetchAllUsers`)
-//         .then(res => res.json())
-//         .then(data => data)
-//         .catch(err => console.log("Error: ", err))
-// }
-// const getUserDetailsAPI = async () => {
-//     const balances = await fetchBalancePerUserAPI;
-//     return balances;
-// }
+// **********************************
+// *** SOLUTION USING ASYNC AWAIT ***
+// **********************************
+app.get('/getUserDetailsAsync/:id', function (req, res) {
+    getBalances(req.params.id, res);
+});
 var getBalances = function (id, res) { return __awaiter(void 0, void 0, void 0, function () {
     var balance, name, request, request2;
     return __generator(this, function (_a) {
-        request = http.request({
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, http.request({
+                    host: 'localhost',
+                    port: 3000,
+                    path: '/balances',
+                    method: 'GET',
+                    headers: {}
+                }, function (response) {
+                    var data = '';
+                    response.setEncoding('utf8');
+                    response.on('data', function (chunk) {
+                        data += chunk;
+                    });
+                    response.on('end', function () {
+                        balance = JSON.parse(data).find(function (user) { return user.id === id; }).balance;
+                    });
+                })];
+            case 1:
+                request = _a.sent();
+                request.end();
+                return [4 /*yield*/, http.request({
+                        host: 'localhost',
+                        port: 3000,
+                        path: '/fetchAllUsers',
+                        method: 'GET',
+                        headers: {}
+                    }, function (response2) {
+                        var data2 = '';
+                        response2.setEncoding('utf8');
+                        response2.on('data', function (chunk2) {
+                            data2 += chunk2;
+                        });
+                        response2.on('end', function () {
+                            name = JSON.parse(data2).find(function (user) { return user.id === id; }).name;
+                            res.end(id + ',' + name + ',' + balance);
+                        });
+                    })];
+            case 2:
+                request2 = _a.sent();
+                request2.end();
+                return [2 /*return*/];
+        }
+    });
+}); };
+// **********************************
+// *** SOLUTION USING ASYNC AWAIT ***
+// **********************************
+// ****************************
+// *** SOLUTION USING PROMISE ***
+// ****************************
+function httpRequestBalance() {
+    return new Promise(function (resolve, reject) {
+        var req = http.request({
             host: 'localhost',
             port: 3000,
             path: '/balances',
             method: 'GET',
-            headers: {
-            // headers such as "Cookie" can be extracted from req object and sent to /test
-            }
-        }, function (response) {
-            var data = '';
-            response.setEncoding('utf8');
-            response.on('data', function (chunk) {
-                data += chunk;
+            headers: {}
+        }, function (res) {
+            var body = '';
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+                body += chunk;
             });
-            response.on('end', function () {
-                //res.end(data);
-                balance = JSON.parse(data).find(function (user) { return user.id === id; }).balance;
+            res.on('end', function () {
+                resolve(body);
             });
         });
-        request.end();
-        request2 = http.request({
+        req.on('error', function (err) {
+            reject(err);
+        });
+        req.end();
+    });
+}
+function httpRequestUsers() {
+    return new Promise(function (resolve, reject) {
+        var req = http.request({
             host: 'localhost',
             port: 3000,
             path: '/fetchAllUsers',
             method: 'GET',
-            headers: {
-            // headers such as "Cookie" can be extracted from req object and sent to /test
-            }
-        }, function (response2) {
-            var data2 = '';
-            response2.setEncoding('utf8');
-            response2.on('data', function (chunk2) {
-                data2 += chunk2;
+            headers: {}
+        }, function (res) {
+            var body = '';
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+                body += chunk;
             });
-            response2.on('end', function () {
-                // res.end(data2);
-                name = JSON.parse(data2).find(function (user) { return user.id === id; }).name;
-                res.end(id + ',' + name + ',' + balance);
+            res.on('end', function () {
+                resolve(body);
             });
         });
-        request2.end();
-        return [2 /*return*/];
+        req.on('error', function (err) {
+            reject(err);
+        });
+        req.end();
     });
-}); };
-app.get('/getUserDetails/:id', function (req, res) {
-    getBalances(req.params.id, res);
-    // const getSuggestions = async () => {
-    // var request = http.request({
-    //     host: 'localhost',
-    //     port: 3000,
-    //     path: '/fetchAllUsers',
-    //     method: 'GET',
-    //     headers: {
-    //       // headers such as "Cookie" can be extracted from req object and sent to /test
-    //     }
-    //   }, function(response: Readable) {
-    //     var data = '';
-    //     response.setEncoding('utf8');
-    //     response.on('data', (chunk) => {
-    //       data += chunk;
-    //     });
-    //     response.on('end', () => {
-    //     //   res.end('check result: ' + data);
-    //       var request2 = http.request({
-    //         host: 'localhost',
-    //         port: 3000,
-    //         path: '/balances',
-    //         method: 'GET',
-    //         headers: {
-    //           // headers such as "Cookie" can be extracted from req object and sent to /test
-    //         }
-    //       }, function(response2: Readable) {
-    //         var data2 = '';
-    //         response2.setEncoding('utf8');
-    //         response2.on('data', (chunk2) => {
-    //           data2 += chunk2;
-    //         });
-    //         response2.on('end', () => {
-    //           res.end('check result: ' + data + data2);
-    //         });
-    //       });
-    //       request2.end();
-    //     });
-    //   });
-    //   request.end();
-    // }
-    // getSuggestions()
-    // getUserDetailsAPI()
-    //     .then(data => res.status(200).send(data))
-    //     .catch(err => console.log("Error", err))
+}
+app.get('/getUserDetailsPromise/:id', function (req, res) {
+    httpRequestBalance().then(function (body) {
+        var balance = JSON.parse(body).find(function (user) { return user.id === req.params.id; }).balance;
+        httpRequestUsers().then(function (body2) {
+            var name = JSON.parse(body2).find(function (user) { return user.id === req.params.id; }).name;
+            res.send(req.params.id + ',' + name + ',' + balance);
+        });
+    });
 });
+// ****************************
+// *** SOLUTION USING PROMISE ***
+// ****************************
 app.get('/fetchAllUsers', function (req, res) {
     var names = [{ id: '1', name: 'rohan' }, { id: '2', name: 'mark' }, { id: '3', name: 'ben' }, { id: '4', name: 'oscar' }];
     res.send(names);
