@@ -1,6 +1,5 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
-import winston from 'winston/lib/winston/config';
 
 dotenv.config();
 const app: Express = express();
