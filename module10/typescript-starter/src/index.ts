@@ -12,6 +12,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const fs = require('fs');
 var http = require('http');
+const axios = require('axios');
 
 
 app.get('/fetchAllUsers/:character', (req: Request, res: Response) => {
@@ -27,33 +28,54 @@ app.get('/fetchAllUsers/:character', (req: Request, res: Response) => {
 
 });
 
-const callAPI = async (character : string) => {
-    var request = await http.request({
-        host: 'localhost',
-        port: 3000,
-        path: `/fetchAllUsers/${character}`,
-        method: 'GET',
-        headers: {
-        }
-    }, function (response: Readable) {
-        var data = '';
-        response.setEncoding('utf8');
-        response.on('data', (chunk) => {
-            data += chunk;
-        });
-        response.on('end', () => {
-        })
+axios.get('http://localhost:3000/fetchAllUsers/a')
+    .then(function (response: any) {
     })
-    request.end();
-}
-
-function Main(char_list : string[]) {
-    for(var chr of char_list) {
-        callAPI(chr);
-    }
-  };
-
-Main(['a','b','c','d','e','f']);
+    .catch(function (error: any) {
+        console.log(error);
+    })
+    .then(function () {
+        axios.get('http://localhost:3000/fetchAllUsers/b')
+            .then(function (response: any) {
+            })
+            .catch(function (error: any) {
+                console.log(error);
+            })
+            .then(function () {
+                axios.get('http://localhost:3000/fetchAllUsers/c')
+                    .then(function (response: any) {
+                    })
+                    .catch(function (error: any) {
+                        console.log(error);
+                    })
+                    .then(function () {
+                        axios.get('http://localhost:3000/fetchAllUsers/d')
+                            .then(function (response: any) {
+                            })
+                            .catch(function (error: any) {
+                                console.log(error);
+                            })
+                            .then(function () {
+                                axios.get('http://localhost:3000/fetchAllUsers/e')
+                                    .then(function (response: any) {
+                                    })
+                                    .catch(function (error: any) {
+                                        console.log(error);
+                                    })
+                                    .then(function () {
+                                        axios.get('http://localhost:3000/fetchAllUsers/f')
+                                            .then(function (response: any) {
+                                            })
+                                            .catch(function (error: any) {
+                                                console.log(error);
+                                            })
+                                            .then(function () {
+                                            });
+                                    });
+                            });
+                    });
+            });
+    });
 
 
 
