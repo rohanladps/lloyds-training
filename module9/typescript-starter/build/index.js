@@ -51,6 +51,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 var fs = require('fs');
 var http = require('http');
+var axios = require('axios');
 // **********************************
 // *** SOLUTION USING ASYNC AWAIT ***
 // **********************************
@@ -64,7 +65,7 @@ var getBalances = function (id, res) { return __awaiter(void 0, void 0, void 0, 
             case 0: return [4 /*yield*/, http.request({
                     host: 'localhost',
                     port: 3000,
-                    path: '/balances',
+                    path: '/fetchAllUsers',
                     method: 'GET',
                     headers: {}
                 }, function (response) {
@@ -74,7 +75,7 @@ var getBalances = function (id, res) { return __awaiter(void 0, void 0, void 0, 
                         data += chunk;
                     });
                     response.on('end', function () {
-                        balance = JSON.parse(data).find(function (user) { return user.id === id; }).balance;
+                        name = JSON.parse(data).find(function (user) { return user.id === id; }).name;
                     });
                 })];
             case 1:
@@ -83,7 +84,7 @@ var getBalances = function (id, res) { return __awaiter(void 0, void 0, void 0, 
                 return [4 /*yield*/, http.request({
                         host: 'localhost',
                         port: 3000,
-                        path: '/fetchAllUsers',
+                        path: '/balances',
                         method: 'GET',
                         headers: {}
                     }, function (response2) {
@@ -93,7 +94,7 @@ var getBalances = function (id, res) { return __awaiter(void 0, void 0, void 0, 
                             data2 += chunk2;
                         });
                         response2.on('end', function () {
-                            name = JSON.parse(data2).find(function (user) { return user.id === id; }).name;
+                            balance = JSON.parse(data2).find(function (user) { return user.id === id; }).balance;
                             res.end(id + ',' + name + ',' + balance);
                         });
                     })];
@@ -159,17 +160,42 @@ function httpRequestUsers() {
     });
 }
 app.get('/getUserDetailsPromise/:id', function (req, res) {
-    httpRequestBalance().then(function (body) {
-        var balance = JSON.parse(body).find(function (user) { return user.id === req.params.id; }).balance;
-        httpRequestUsers().then(function (body2) {
-            var name = JSON.parse(body2).find(function (user) { return user.id === req.params.id; }).name;
-            res.send(req.params.id + ',' + name + ',' + balance);
+    axios.get('http://localhost:3000/fetchAllUsers')
+        .then(function (response) {
+        var name = (response.data).find(function (user) { return user.id === req.params.id; }).name;
+        axios.get('http://localhost:3000/balances')
+            .then(function (response) {
+            var balance = (response.data).find(function (user) { return user.id === req.params.id; }).balance;
+            res.end(req.params.id + ',' + name + ',' + balance);
+        })
+            .catch(function (error) {
+            console.log(error);
+        })
+            .then(function () {
         });
+    })
+        .catch(function (error) {
+        console.log(error);
+    })
+        .then(function () {
     });
 });
 // ****************************
 // *** SOLUTION USING PROMISE ***
 // ****************************
+// axios.get('/fetchAllUsers2')
+// .then(function (response : any) {
+//   // handle success
+//   console.log(response);
+// })
+// .catch(function (error : any) {
+//   // handle error
+//   console.log(error);
+// })
+// .then(function () {
+//   // always executed
+//   console.log('hello');
+// });
 app.get('/fetchAllUsers', function (req, res) {
     var names = [{ id: '1', name: 'rohan' }, { id: '2', name: 'mark' }, { id: '3', name: 'ben' }, { id: '4', name: 'oscar' }];
     res.send(names);

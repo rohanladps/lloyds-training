@@ -12,6 +12,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const fs = require('fs');
 var http = require('http');
+const axios = require('axios');
 
 interface UserBalance {
     id: string,
@@ -37,7 +38,7 @@ const getBalances = async (id: string, res: Response) => {
     var request = await http.request({
         host: 'localhost',
         port: 3000,
-        path: '/balances',
+        path: '/fetchAllUsers',
         method: 'GET',
         headers: {
         }
@@ -48,7 +49,7 @@ const getBalances = async (id: string, res: Response) => {
             data += chunk;
         });
         response.on('end', () => {
-            balance = JSON.parse(data).find((user: UserBalance) => user.id === id).balance;
+            name = JSON.parse(data).find((user: UserName) => user.id === id).name;
         })
     })
     request.end();
@@ -56,7 +57,7 @@ const getBalances = async (id: string, res: Response) => {
     var request2 = await http.request({
         host: 'localhost',
         port: 3000,
-        path: '/fetchAllUsers',
+        path: '/balances',
         method: 'GET',
         headers: {
         }
@@ -67,7 +68,7 @@ const getBalances = async (id: string, res: Response) => {
             data2 += chunk2;
         });
         response2.on('end', () => {
-            name = JSON.parse(data2).find((user: UserName) => user.id === id).name;
+            balance = JSON.parse(data2).find((user: UserBalance) => user.id === id).balance;
             res.end(id + ',' + name + ',' + balance);
         })
     })
@@ -87,71 +88,36 @@ const getBalances = async (id: string, res: Response) => {
 // *** SOLUTION USING PROMISE ***
 // ****************************
 
-function httpRequestBalance() {
-    return new Promise<string>(function (resolve, reject) {
-        var req = http.request({
-            host: 'localhost',
-            port: 3000,
-            path: '/balances',
-            method: 'GET',
-            headers: {
-            }
-        }, function (res: Readable) {
-            var body = '';
-            res.setEncoding('utf8');
-            res.on('data', (chunk) => {
-                body += chunk;
-            });
-            res.on('end', function () {
-                resolve(body);
-            });
-        });
-        req.on('error', function (err: Error) {
-            reject(err);
-        });
-        req.end();
-    });
-}
-
-function httpRequestUsers() {
-    return new Promise<string>(function (resolve, reject) {
-        var req = http.request({
-            host: 'localhost',
-            port: 3000,
-            path: '/fetchAllUsers',
-            method: 'GET',
-            headers: {
-            }
-        }, function (res: Readable) {
-            var body = '';
-            res.setEncoding('utf8');
-            res.on('data', (chunk) => {
-                body += chunk;
-            });
-            res.on('end', function () {
-                resolve(body);
-            });
-        });
-        req.on('error', function (err: Error) {
-            reject(err);
-        });
-        req.end();
-    });
-}
-
-
 app.get('/getUserDetailsPromise/:id', (req: Request, res: Response) => {
-    httpRequestBalance().then(function (body: string) {
-        var balance = JSON.parse(body).find((user: UserBalance) => user.id === req.params.id).balance;
-        httpRequestUsers().then(function (body2: string) {
-            var name = JSON.parse(body2).find((user: UserName) => user.id === req.params.id).name;
-            res.send(req.params.id + ',' + name + ',' + balance);
+    axios.get('http://localhost:3000/fetchAllUsers')
+        .then(function (response: any) {
+            var name = (response.data).find((user: UserBalance) => user.id === req.params.id).name;
+
+            axios.get('http://localhost:3000/balances')
+                .then(function (response: any) {
+                    var balance = (response.data).find((user: UserBalance) => user.id === req.params.id).balance;
+                    res.end(req.params.id + ',' + name + ',' + balance);
+                })
+                .catch(function (error: any) {
+                    console.log(error);
+                })
+                .then(function () {
+                });
         })
-    })
+        .catch(function (error: any) {
+            console.log(error);
+        })
+        .then(function () {
+        });
 });
+
 // ****************************
 // *** SOLUTION USING PROMISE ***
 // ****************************
+
+
+
+
 
 app.get('/fetchAllUsers', (req: Request, res: Response) => {
     const names = [{ id: '1', name: 'rohan' }, { id: '2', name: 'mark' }, { id: '3', name: 'ben' }, { id: '4', name: 'oscar' }];
